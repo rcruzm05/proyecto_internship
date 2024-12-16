@@ -2,7 +2,7 @@ import time
 from google.cloud import monitoring_v3
 
 def get_instance_metrics(project_id, instance_id, zone, duration):
-    # Inicializar cliente de Monitoring y Compute Engine
+    # Inicializar cliente de Monitoring
     client = monitoring_v3.MetricServiceClient()
 
     # Definir tiempo de consulta
@@ -18,12 +18,12 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
         }
     )
 
-    # Métricas a consultar
+    # Metricas a consultar
     metrics = {
         "cpu": "compute.googleapis.com/instance/cpu/utilization",
         "memory": "agent.googleapis.com/memory/percent_used",
         "disk": "agent.googleapis.com/disk/percent_used",
-        "swap": "agent.googleapis.com/memory/swap/percent_used"
+        "swap": "agent.googleapis.com/swap/percent_used"
     }
 
     # Consultar mtricas
@@ -50,9 +50,9 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
         print("\n")
 
 # Configuración de parámetros de instancia
-project_id = ""
-instance_id= ""
-zone = ""
+project_id = "sit-devops-training"
+instance_id= "4609971122707751401"
+zone = "us-central1-c"
 duration = 1200
 
 get_instance_metrics(project_id, instance_id, zone, duration)
