@@ -32,7 +32,7 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
         if metric_name in ["memory", "swap", "disk"]:
             state_filter = 'AND metric.labels.state = "used"'
         else:
-            state_filter = "" 
+            state_filter = ""
 
         filters = (
             f'metric.type = "{metric_type}" AND '
@@ -49,13 +49,37 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
             }
         )
 
-        # Imprimir tiempos y valores importantes (filtrado de información)
         print(f"Resultados para {metric_name}:")
-        for result in results:
-            for point in result.points:
-                start_time = point.interval.start_time
-                value = point.value.double_value
-                print(f"Time: {start_time} - Value: {value}")
+
+        # Procesamiento de la métrica disco (separar por sistema de archivos)
+        if metric_name == "disk":
+            device_logs = {}
+            for result in results:
+                device = result.metric.labels.get("device", "unknown")
+                if device not in device_logs:
+                    device_logs[device] = []
+                for point in result.points:
+                    #start_time = point.interval.start_time
+                    # Se usa timestamp() para conservar la hora en epoch
+                    start_time = point.interval.start_time.timestamp()
+                    value = point.value.double_value
+                    device_logs[device].append({"time": start_time, "value": value})
+
+            # Imprimir resultados separados por dispositivo
+            for device, logs in device_logs.items():
+                print(f"  Dispositivo {device}:")
+                for log in logs:
+                    print(f"    Time: {log['time']} - Value: {log['value']}")
+        else:
+            # Para las otras métricas
+            for result in results:
+                for point in result.points:
+                    #start_time = point.interval.start_time
+                    # Se usa timestamp() para conservar la hora en epoch
+                    start_time = point.interval.start_time.timestamp()
+                    value = point.value.double_value
+                    print(f"  Time: {start_time} - Value: {value}")
+
         print("\n")
 
 # Uso del script
