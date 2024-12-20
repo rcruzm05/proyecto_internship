@@ -18,20 +18,26 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
         }
     )
 
-    # Metricas a consultar
+    # Métricas a consultar
     metrics = {
         "cpu": "compute.googleapis.com/instance/cpu/utilization",
         "memory": "agent.googleapis.com/memory/percent_used",
+        "swap": "agent.googleapis.com/swap/percent_used",
         "disk": "agent.googleapis.com/disk/percent_used",
-        "swap": "agent.googleapis.com/swap/percent_used"
     }
 
-    # Consultar mtricas
+    # Consultar métricas
     for metric_name, metric_type in metrics.items():
+        # Condición adicional para métricas con atributo "state = used"
+        if metric_name in ["memory", "swap", "disk"]:
+            state_filter = 'AND metric.labels.state = "used"'
+        else:
+            state_filter = "" 
+
         filters = (
             f'metric.type = "{metric_type}" AND '
             f'resource.labels.instance_id = "{instance_id}" AND '
-            f'resource.labels.zone = "{zone}"'
+            f'resource.labels.zone = "{zone}" {state_filter}'
         )
 
         results = client.list_time_series(
@@ -43,16 +49,19 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
             }
         )
 
-        # Imprimir resultados
+        # Imprimir tiempos y valores importantes (filtrado de información)
         print(f"Resultados para {metric_name}:")
         for result in results:
-            print(result)
+            for point in result.points:
+                start_time = point.interval.start_time
+                value = point.value.double_value
+                print(f"Time: {start_time} - Value: {value}")
         print("\n")
 
-# Configuración de parámetros de instancia
-project_id = "sit-devops-training"
-instance_id= "4609971122707751401"
-zone = "us-central1-c"
-duration = 1200
+# Uso del script
+project_id = 'sit-devops-training'
+instance_id = '4609971122707751401'
+zone = 'us-central1-c'
+duration = 600 
 
 get_instance_metrics(project_id, instance_id, zone, duration)
