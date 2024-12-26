@@ -26,10 +26,9 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
         "disk": "agent.googleapis.com/disk/percent_used",
     }
 
-    # Consultar métricas
     for metric_name, metric_type in metrics.items():
         # Condición adicional para métricas con atributo "state = used"
-        if metric_name in ["memory", "swap", "disk"]:
+        if metric_name != "cpu":
             state_filter = 'AND metric.labels.state = "used"'
         else:
             state_filter = ""
@@ -51,38 +50,17 @@ def get_instance_metrics(project_id, instance_id, zone, duration):
 
         print(f"Resultados para {metric_name}:")
 
-        # Procesamiento de la métrica disco (separar por sistema de archivos)
-        if metric_name == "disk":
-            device_logs = {}
-            for result in results:
-                device = result.metric.labels.get("device", "unknown")
-                if device not in device_logs:
-                    device_logs[device] = []
-                for point in result.points:
-                    #start_time = point.interval.start_time
-                    # Se usa timestamp() para conservar la hora en epoch
-                    start_time = point.interval.start_time.timestamp()
-                    value = point.value.double_value
-                    device_logs[device].append({"time": start_time, "value": value})
-
-            # Imprimir resultados separados por dispositivo
-            for device, logs in device_logs.items():
-                print(f"  Dispositivo {device}:")
-                for log in logs:
-                    print(f"    Time: {log['time']} - Value: {log['value']}")
-        else:
-            # Para las otras métricas
-            for result in results:
-                for point in result.points:
-                    #start_time = point.interval.start_time
-                    # Se usa timestamp() para conservar la hora en epoch
-                    start_time = point.interval.start_time.timestamp()
-                    value = point.value.double_value
+        for result in results:
+            for point in result.points:
+                # Se usa timestamp() para conservar la hora en epoch
+                start_time = point.interval.start_time.timestamp()
+                value = point.value.double_value
+                if metric_name == "disk":
+                    device = result.metric.labels.get("device", "unknown")
+                    print(f"  Device: {device} - Time: {start_time} - Value: {value}")
+                else:
                     print(f"  Time: {start_time} - Value: {value}")
 
-        print("\n")
-
-# Uso del script
 project_id = 'sit-devops-training'
 instance_id = '4609971122707751401'
 zone = 'us-central1-c'
