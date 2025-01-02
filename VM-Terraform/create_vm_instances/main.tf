@@ -18,27 +18,37 @@ resource "google_compute_instance" "example" {
   network_interface {
     network = "vpc-liverpool"
     subnetwork = "subnet-liverpool"
-
-    #access_config = null
 }
 
   metadata = {
     startup-script = <<-EOT
       #!/bin/bash
-      curl -sSO https://dl.google.com/cloudagents/add-monitoring-agent-repo.sh
-      #sudo bash add-monitoring-agent-repo.sh
+      # Creacion de swap
+      sudo dd if=/dev/zero of=/swapcito bs=1M count=512 
+      sudo mkswap /swapcito
+      sudo chmod 0600 /swapcito
+      sudo swapon /swapcito
+      sudo sh -c 'echo "/swapcito swap swap defaults 0 0" >> /etc/fstab' 
+      # Instalar agentes de monitoreo
+      curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
       sudo bash add-google-cloud-ops-agent-repo.sh --also-install
       sudo apt-get update
-      sudo apt-get install -y stackdriver-agent
-      sudo service stackdriver-agent start
+      sudo systemctl daemon-reload
+      sudo apt update
+      # Instalar herramienta para estresar la VM
+      sudo apt install stress-ng -y
     EOT
   }
 
-  #tags = ["web", "cloud-monitoring"]
   tags = ["iap-access"]
 
-  #service_account {
-  #  email  = "default"
-  #  scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-  #}
+  service_account {
+    email  = "225988200293-compute@developer.gserviceaccount.com"
+    scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring.write",
+      "https://www.googleapis.com/auth/devstorage.read_only"
+    ]
+  
+  }
 }

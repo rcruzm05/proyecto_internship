@@ -101,8 +101,9 @@ def check_thresholds(metrics_data):
     return alerts
 
 project_id = 'sit-devops-training'
-instance_id = '4609971122707751401'
+#instance_id = '4609971122707751401'
+instance_id = '5359897555328800587'
 zone = 'us-central1-c'
-duration = 600 
+duration = 1200 
 
 get_instance_metrics(project_id, instance_id, zone, duration)
