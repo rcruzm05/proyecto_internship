@@ -1,0 +1,9 @@
+project_id            = "sit-devops-training"
+region                = "us-central1"
+zone                  = "us-central1-c"
+instance_count        = 3
+instance_name_prefix  = "tf-instance"
+network               = "vpc-liverpool"
+subnetwork            = "subnet-liverpool"
+service_account_email = "225988200293-compute@developer.gserviceaccount.com"
+tags                  = ["iap-access"]
